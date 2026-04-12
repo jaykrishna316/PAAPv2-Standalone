@@ -1,0 +1,18 @@
+{
+  "suiteId": "PAAPv2-OPRF-MODP14-SHA256",
+  "keyId": "test-oprf-v1",
+  "issuerSecretKHex": "1111111111111111111111111111111111111111111111111111111111111111",
+  "contextId": "example-context",
+  "cases": [
+    {
+      "name": "wrong_token_output",
+      "tokenInputHex": "000102030405060708090a0b0c0d0e0f101112131415161718191a1b1c1d1e1f",
+      "tokenOutputHex": "75ef5be9d4c04c5f6e21dae3caa6e9eaab1fc2ae4b6cf66251792a0d44fbb51e8f2f80ffe7fe316d003d40caa7488875035d2a3d48c23bd4b23504774bf8c6cda12552e70726f09dcb0fbd8a421106654b609d89932fdbf3385721dd5b53d81c3ab1bb4eda1d7ec654527bc1c091b6c1df21d39aab4ee5c9be74d162eec675080cd044199b87200187813dedb7996aee25a1faceaa48f44b5f2655721ff98189b6b76102a5fca18257d5540c893065a1e024127de328be70ba5a4e6e5dfacc8dbd294846c7ce5c7c1d380b34a0be742e558f05e7579c311a2a1563798d7becf938e8dd9efa951d5330145fa89cc094db88883a37ca2822d0f90dd45dcfef183a"
+    },
+    {
+      "name": "wrong_token_input_length",
+      "tokenInputHex": "abcd",
+      "tokenOutputHex": "00"
+    }
+  ]
+}

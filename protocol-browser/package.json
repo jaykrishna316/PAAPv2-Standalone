@@ -1,0 +1,7 @@
+{
+  "name": "paapv2-browser",
+  "version": "0.1.0",
+  "private": true,
+  "module": "src/index.js",
+  "license": "MIT"
+}

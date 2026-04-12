@@ -1,0 +1,23 @@
+{
+  "name": "paapv2-standalone",
+  "version": "1.0.0",
+  "description": "Standalone PAAP v2 protocol implementation with demo UI",
+  "main": "demo/server.js",
+  "scripts": {
+    "start": "node demo/server.js",
+    "dev": "node demo/server.js"
+  },
+  "keywords": [
+    "paap",
+    "privacy",
+    "anonymous",
+    "authorization",
+    "blind-signature",
+    "oprf"
+  ],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "crypto": "^1.0.1"
+  }
+}

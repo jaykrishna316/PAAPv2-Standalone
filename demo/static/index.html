@@ -1,0 +1,563 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>PAAP v2 Demo | Anonymous Authorization</title>
+    <style>
+      :root {
+        --bg0: #070a12;
+        --bg1: #0b1220;
+        --card: rgba(255,255,255,.06);
+        --card2: rgba(255,255,255,.08);
+        --border: rgba(255,255,255,.12);
+        --text: #eaf0ff;
+        --muted: rgba(234,240,255,.72);
+        --muted2: rgba(234,240,255,.55);
+        --accent: #6d7cff;
+        --accent2: #22c55e;
+        --warn: #fbbf24;
+        --danger: #ff6b6b;
+        --shadow: 0 20px 60px rgba(0,0,0,.55);
+        --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      }
+      @media (prefers-color-scheme: light) {
+        :root {
+          --bg0: #f7f8ff;
+          --bg1: #ffffff;
+          --card: rgba(16,24,40,.03);
+          --card2: rgba(16,24,40,.04);
+          --border: rgba(16,24,40,.10);
+          --text: #101828;
+          --muted: rgba(16,24,40,.70);
+          --muted2: rgba(16,24,40,.55);
+          --shadow: 0 20px 60px rgba(16,24,40,.10);
+        }
+      }
+      [data-theme="dark"] {
+        --bg0: #070a12;
+        --bg1: #0b1220;
+        --card: rgba(255,255,255,.06);
+        --card2: rgba(255,255,255,.08);
+        --border: rgba(255,255,255,.12);
+        --text: #eaf0ff;
+        --muted: rgba(234,240,255,.72);
+        --muted2: rgba(234,240,255,.55);
+        --shadow: 0 20px 60px rgba(0,0,0,.55);
+      }
+      [data-theme="light"] {
+        --bg0: #f7f8ff;
+        --bg1: #ffffff;
+        --card: rgba(16,24,40,.03);
+        --card2: rgba(16,24,40,.04);
+        --border: rgba(16,24,40,.10);
+        --text: #101828;
+        --muted: rgba(16,24,40,.70);
+        --muted2: rgba(16,24,40,.55);
+        --shadow: 0 20px 60px rgba(16,24,40,.10);
+      }
+
+      html, body { height: 100%; }
+      body {
+        font-family: var(--sans);
+        margin: 0;
+        color: var(--text);
+        background:
+          radial-gradient(1000px 600px at 15% -10%, rgba(109,124,255,.35), rgba(109,124,255,0)),
+          radial-gradient(700px 500px at 95% 10%, rgba(34,197,94,.18), rgba(34,197,94,0)),
+          linear-gradient(180deg, var(--bg0), var(--bg1));
+      }
+
+      .wrap { max-width: 1100px; margin: 0 auto; padding: 22px 16px 64px; }
+      .topbar { display:flex; align-items:center; justify-content:space-between; gap: 12px; }
+      .brand { display:flex; align-items:center; gap: 10px; user-select:none; }
+      .logo {
+        width: 34px; height: 34px; border-radius: 10px;
+        background: linear-gradient(135deg, rgba(109,124,255,1), rgba(34,197,94,1));
+        box-shadow: 0 10px 25px rgba(109,124,255,.25);
+      }
+      .brand .name { font-weight: 700; letter-spacing: .2px; }
+      .brand .tag { font-size: 12px; color: var(--muted2); margin-top: 1px; }
+
+      .btn {
+        appearance: none;
+        border: 1px solid var(--border);
+        background: var(--card2);
+        color: var(--text);
+        padding: 10px 12px;
+        border-radius: 12px;
+        cursor: pointer;
+        font-weight: 600;
+        transition: transform .05s ease, background .15s ease, border-color .15s ease, opacity .15s ease;
+      }
+      .btn:hover { border-color: rgba(109,124,255,.45); }
+      .btn:active { transform: translateY(1px); }
+      .btn.primary {
+        background: linear-gradient(135deg, rgba(109,124,255,1), rgba(109,124,255,.82));
+        border-color: rgba(109,124,255,.6);
+        box-shadow: 0 18px 55px rgba(109,124,255,.25);
+      }
+      .btn.good {
+        background: linear-gradient(135deg, rgba(34,197,94,1), rgba(34,197,94,.82));
+        border-color: rgba(34,197,94,.55);
+        box-shadow: 0 18px 55px rgba(34,197,94,.18);
+      }
+      .btn:disabled { opacity: .55; cursor: not-allowed; }
+      .btn.ghost { background: transparent; }
+
+      .hero { display:grid; grid-template-columns: 1.15fr .85fr; gap: 18px; margin-top: 18px; align-items: start; }
+      @media (max-width: 920px) { .hero { grid-template-columns: 1fr; } }
+      h1 { margin: 0; font-size: 34px; line-height: 1.08; letter-spacing: -0.4px; }
+      .sub { margin: 10px 0 0; color: var(--muted); line-height: 1.55; }
+      .pillrow { display:flex; flex-wrap:wrap; gap: 8px; margin-top: 14px; }
+      .pill {
+        display:inline-flex; align-items:center; gap: 7px;
+        padding: 6px 10px; border-radius: 999px;
+        border: 1px solid var(--border); background: var(--card);
+        color: var(--muted); font-size: 12px;
+      }
+      .dot { width: 7px; height: 7px; border-radius: 50%; background: rgba(109,124,255,.9); }
+      .dot.good { background: rgba(34,197,94,.9); }
+      .dot.warn { background: rgba(251,191,36,.95); }
+
+      .card {
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 16px;
+        box-shadow: var(--shadow);
+        backdrop-filter: blur(10px);
+      }
+      .card + .card { margin-top: 14px; }
+      .cardTitle { font-weight: 700; margin: 0 0 4px; }
+      .cardDesc { margin: 0; color: var(--muted2); font-size: 13px; line-height: 1.5; }
+
+      .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+      @media (max-width: 720px) { .grid2 { grid-template-columns: 1fr; } }
+      .field label { display:block; font-size: 12px; color: var(--muted2); margin: 0 0 6px; }
+      .input {
+        width: 100%;
+        padding: 12px 12px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        background: rgba(0,0,0,.12);
+        color: var(--text);
+        outline: none;
+      }
+      [data-theme="light"] .input { background: rgba(16,24,40,.03); }
+      .input:focus { border-color: rgba(109,124,255,.55); box-shadow: 0 0 0 4px rgba(109,124,255,.15); }
+      .hint { margin-top: 8px; font-size: 12px; color: var(--muted2); line-height: 1.45; }
+      .hint strong { color: var(--text); font-weight: 700; }
+
+      .actions { display:flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+      .row { display:flex; gap: 10px; align-items:center; flex-wrap: wrap; }
+      .spacer { flex: 1; }
+
+      .steps { margin-top: 10px; display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+      @media (max-width: 900px) { .steps { grid-template-columns: 1fr; } }
+      .step {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        padding: 12px;
+        background: rgba(0,0,0,.08);
+      }
+      [data-theme="light"] .step { background: rgba(16,24,40,.02); }
+      .stepTop { display:flex; align-items:center; justify-content:space-between; gap: 10px; }
+      .stepName { font-weight: 800; font-size: 13px; letter-spacing: .2px; }
+      .badge {
+        font-size: 11px; color: var(--muted); border: 1px solid var(--border);
+        padding: 3px 8px; border-radius: 999px; background: var(--card2);
+      }
+      .stepBody { margin-top: 7px; color: var(--muted2); font-size: 12px; line-height: 1.45; }
+      code, .mono { font-family: var(--mono); }
+      code { background: rgba(109,124,255,.12); border: 1px solid rgba(109,124,255,.20); padding: 1px 6px; border-radius: 8px; }
+      [data-theme="light"] code { background: rgba(109,124,255,.08); }
+
+      .split { display:grid; grid-template-columns: 1fr .9fr; gap: 14px; margin-top: 14px; }
+      @media (max-width: 1000px) { .split { grid-template-columns: 1fr; } }
+
+      .tabs { display:flex; gap: 8px; margin-top: 12px; }
+      .tab { font-size: 12px; padding: 7px 10px; border-radius: 999px; border: 1px solid var(--border); background: transparent; color: var(--muted); cursor: pointer; }
+      .tab.active { background: var(--card2); color: var(--text); border-color: rgba(109,124,255,.45); }
+
+      .panel { margin-top: 10px; }
+      .kv { display:grid; grid-template-columns: 160px 1fr; gap: 10px; align-items: start; margin: 8px 0; }
+      @media (max-width: 520px) { .kv { grid-template-columns: 1fr; } }
+      .k { font-size: 12px; color: var(--muted2); }
+      .v { font-size: 13px; color: var(--text); word-break: break-word; }
+      .v .copyline { display:flex; gap: 8px; align-items:center; }
+
+      textarea {
+        width: 100%;
+        min-height: 220px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(0,0,0,.12);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 12px;
+        line-height: 1.45;
+        resize: vertical;
+      }
+      [data-theme="light"] textarea { background: rgba(16,24,40,.03); }
+
+      .statusline { margin-top: 10px; display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
+      .statuspill {
+        display:inline-flex; align-items:center; gap: 7px;
+        padding: 7px 10px; border-radius: 999px;
+        border: 1px solid var(--border); background: var(--card2);
+        font-size: 12px;
+      }
+      .ok { color: rgba(34,197,94,.95); }
+      .warn { color: rgba(251,191,36,.95); }
+      .err { color: rgba(255,107,107,.95); }
+
+      .toast {
+        position: fixed;
+        right: 18px;
+        bottom: 18px;
+        max-width: 380px;
+        padding: 12px 12px;
+        border-radius: 14px;
+        border: 1px solid var(--border);
+        background: rgba(0,0,0,.55);
+        backdrop-filter: blur(10px);
+        color: var(--text);
+        box-shadow: var(--shadow);
+        display:none;
+      }
+      [data-theme="light"] .toast { background: rgba(255,255,255,.85); }
+      .toast strong { display:block; font-size: 13px; margin-bottom: 4px; }
+      .toast span { display:block; font-size: 12px; color: var(--muted); line-height: 1.4; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <div class="topbar">
+        <div class="brand">
+          <div class="logo" aria-hidden="true"></div>
+          <div>
+            <div class="name">PAAP v2</div>
+            <div class="tag">Anonymous authorization • eligible-only • one-time</div>
+          </div>
+        </div>
+        <div class="row">
+          <button id="btnTheme" class="btn ghost" type="button" title="Toggle theme">Theme</button>
+          <a class="btn ghost" href="/issuer" target="_blank" rel="noreferrer" title="Open issuer metadata JSON">Issuer JSON</a>
+        </div>
+      </div>
+
+      <div class="hero">
+        <div class="card">
+          <h1>Issue once. Redeem once. Stay unlinkable.</h1>
+          <p class="sub">
+            This demo shows how PAAP v2 grants <strong>eligibility without identity login</strong> using blind issuance,
+            then enforces single-use via <strong>scoped nullifiers</strong>.
+          </p>
+
+          <div class="pillrow">
+            <span class="pill"><span class="dot"></span><span>3 endpoints: <span class="mono">/issuer</span>, <span class="mono">/issue</span>, <span class="mono">/redeem</span></span></span>
+            <span class="pill"><span class="dot good"></span><span>No IP/UA in DB by protocol design</span></span>
+            <span class="pill"><span class="dot warn"></span><span>Don’t share issuance codes in URLs</span></span>
+          </div>
+
+          <div class="steps">
+            <div class="step">
+              <div class="stepTop">
+                <div class="stepName">1) Fetch issuer</div>
+                <span class="badge" id="issuerBadge">loading…</span>
+              </div>
+              <div class="stepBody">Client learns the suite + public parameters to blind in-browser.</div>
+            </div>
+            <div class="step">
+              <div class="stepTop">
+                <div class="stepName">2) Blind issue</div>
+                <span class="badge">eligible-only</span>
+              </div>
+              <div class="stepBody">You send <code>issuanceCode</code> + a blinded element. Server never sees your secret.</div>
+            </div>
+            <div class="step">
+              <div class="stepTop">
+                <div class="stepName">3) Redeem</div>
+                <span class="badge">one-time</span>
+              </div>
+              <div class="stepBody">Redeem once to receive a one-time capability token (e.g., submission token).</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">Run the flow</div>
+          <p class="cardDesc">Paste a one-time issuance code printed by the demo server, then click One‑click.</p>
+
+          <div class="grid2">
+            <div class="field">
+              <label for="surveyId">Context ID</label>
+              <input class="input" id="surveyId" value="demo-survey" />
+              <div class="hint">Scopes nullifiers to a survey/app. Think: <strong>surveyId</strong>.</div>
+            </div>
+            <div class="field">
+              <label for="issuanceCode">Issuance code</label>
+              <input class="input" id="issuanceCode" placeholder="Paste the code from the server console" />
+              <div class="hint"><strong>Keep secret.</strong> If someone else redeems first, they can burn it.</div>
+            </div>
+          </div>
+
+          <div class="actions">
+            <button id="btnRun" class="btn good" type="button">One‑click: Issue + Redeem</button>
+            <button id="btnIssuer" class="btn" type="button">Refresh issuer</button>
+            <span class="spacer"></span>
+            <button id="btnCopyToken" class="btn ghost" type="button" disabled>Copy submission token</button>
+          </div>
+
+          <div class="statusline">
+            <span class="statuspill"><span class="dot" id="statusDot"></span><span id="statusText">Ready.</span></span>
+            <span class="pill" id="suitePill" style="display:none;"><span class="dot"></span><span class="mono" id="suiteText"></span></span>
+          </div>
+        </div>
+      </div>
+
+      <div class="split">
+        <div class="card">
+          <div class="cardTitle">Result</div>
+          <p class="cardDesc">This is what you’d keep on the server side: a nullifier (spent marker) + a one‑time token.</p>
+
+          <div class="tabs">
+            <button id="tabSummary" class="tab active" type="button">Summary</button>
+            <button id="tabRaw" class="tab" type="button">Raw JSON</button>
+          </div>
+
+          <div id="panelSummary" class="panel">
+            <div class="kv">
+              <div class="k">Suite</div>
+              <div class="v mono" id="summarySuite">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Issuer keyId</div>
+              <div class="v mono" id="summaryKeyId">—</div>
+            </div>
+            <div class="kv">
+              <div class="k">Submission token</div>
+              <div class="v">
+                <div class="copyline">
+                  <span class="mono" id="summaryToken">—</span>
+                  <button id="btnCopyTokenInline" class="btn ghost" type="button" disabled>Copy</button>
+                </div>
+                <div class="hint" id="summaryExpires"></div>
+              </div>
+            </div>
+            <div class="kv">
+              <div class="k">What’s stored</div>
+              <div class="v">
+                <div class="hint">A <strong>spent nullifier</strong> + a short-lived <strong>capability token</strong>. No identity binding required.</div>
+              </div>
+            </div>
+          </div>
+
+          <div id="panelRaw" class="panel" style="display:none;">
+            <textarea id="out" readonly spellcheck="false"></textarea>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="cardTitle">Privacy posture (demo)</div>
+          <p class="cardDesc">PAAP helps remove identity from the authorization path. Operational logging still matters.</p>
+          <div class="kv">
+            <div class="k">You store</div>
+            <div class="v">
+              <div class="hint">Hashed issuance-code record, spent nullifiers, short-lived capability tokens.</div>
+            </div>
+          </div>
+          <div class="kv">
+            <div class="k">You don’t store</div>
+            <div class="v">
+              <div class="hint">Raw issuance codes, identity→credential mapping, identity attached to submissions.</div>
+            </div>
+          </div>
+          <div class="kv">
+            <div class="k">Still possible</div>
+            <div class="v">
+              <div class="hint">Timing correlation by network observers. For “extreme” anonymity, use a relay/Tor + avoid body logging.</div>
+            </div>
+          </div>
+          <div class="actions">
+            <a class="btn primary" href="/sdk/paapv2-browser.js" target="_blank" rel="noreferrer">View browser SDK</a>
+            <a class="btn" href="https://github.com/jaykrishna316/PAAP" target="_blank" rel="noreferrer">Protocol repo</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="toast" class="toast" role="status" aria-live="polite">
+      <strong id="toastTitle">Copied</strong>
+      <span id="toastBody">Copied to clipboard.</span>
+    </div>
+
+    <script type="module">
+      import {
+        generateTokenInputHex,
+        oprfBlindModp14,
+        oprfUnblindModp14,
+        oprfDeriveCommitmentHex
+      } from '/sdk/paapv2-browser.js';
+
+      const out = document.getElementById('out');
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const issuanceCodeEl = document.getElementById('issuanceCode');
+
+      const summarySuite = document.getElementById('summarySuite');
+      const summaryKeyId = document.getElementById('summaryKeyId');
+      const summaryToken = document.getElementById('summaryToken');
+      const summaryExpires = document.getElementById('summaryExpires');
+
+      const suitePill = document.getElementById('suitePill');
+      const suiteText = document.getElementById('suiteText');
+      const issuerBadge = document.getElementById('issuerBadge');
+
+      const btnCopyToken = document.getElementById('btnCopyToken');
+      const btnCopyTokenInline = document.getElementById('btnCopyTokenInline');
+
+      const tabSummary = document.getElementById('tabSummary');
+      const tabRaw = document.getElementById('tabRaw');
+      const panelSummary = document.getElementById('panelSummary');
+      const panelRaw = document.getElementById('panelRaw');
+
+      const toast = document.getElementById('toast');
+      const toastTitle = document.getElementById('toastTitle');
+      const toastBody = document.getElementById('toastBody');
+
+      const log = (obj) => {
+        out.value = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+      };
+
+      const setStatus = (txt, level = 'ok') => {
+        statusText.textContent = txt;
+        statusDot.className = 'dot' + (level === 'ok' ? ' good' : level === 'warn' ? ' warn' : '');
+        statusText.className = level === 'ok' ? 'ok' : level === 'warn' ? 'warn' : 'err';
+      };
+
+      const showToast = (title, body) => {
+        toastTitle.textContent = title;
+        toastBody.textContent = body;
+        toast.style.display = 'block';
+        clearTimeout(showToast._t);
+        showToast._t = setTimeout(() => (toast.style.display = 'none'), 2200);
+      };
+
+      const setTab = (raw) => {
+        if (raw) {
+          tabRaw.classList.add('active');
+          tabSummary.classList.remove('active');
+          panelRaw.style.display = '';
+          panelSummary.style.display = 'none';
+          return;
+        }
+        tabSummary.classList.add('active');
+        tabRaw.classList.remove('active');
+        panelSummary.style.display = '';
+        panelRaw.style.display = 'none';
+      };
+
+      tabSummary.onclick = () => setTab(false);
+      tabRaw.onclick = () => setTab(true);
+
+      const themeBtn = document.getElementById('btnTheme');
+      const getTheme = () => localStorage.getItem('paap_theme') || 'auto';
+      const applyTheme = (t) => {
+        if (t === 'auto') document.documentElement.removeAttribute('data-theme');
+        else document.documentElement.setAttribute('data-theme', t);
+        themeBtn.textContent = t === 'auto' ? 'Theme: Auto' : t === 'dark' ? 'Theme: Dark' : 'Theme: Light';
+      };
+      const rotateTheme = () => {
+        const cur = getTheme();
+        const next = cur === 'auto' ? 'dark' : cur === 'dark' ? 'light' : 'auto';
+        localStorage.setItem('paap_theme', next);
+        applyTheme(next);
+      };
+      themeBtn.onclick = rotateTheme;
+      applyTheme(getTheme());
+
+      let issuer = null;
+      async function fetchIssuer() {
+        const r = await fetch('/issuer');
+        issuer = await r.json();
+        if (!r.ok) throw new Error(issuer.error || 'issuer error');
+        issuerBadge.textContent = 'ready';
+        suiteText.textContent = issuer.suiteId || 'unknown-suite';
+        suitePill.style.display = '';
+        summarySuite.textContent = issuer.suiteId || '—';
+        summaryKeyId.textContent = issuer.keyId || '—';
+        setStatus('Issuer loaded.', 'ok');
+        log({ issuer });
+      }
+
+      async function oneClick() {
+        setStatus('Running…', 'warn');
+        issuerBadge.textContent = 'loading…';
+        if (!issuer) await fetchIssuer();
+
+        const issuanceCode = issuanceCodeEl.value.trim();
+        if (!issuanceCode) {
+          setStatus('Missing issuance code.', 'err');
+          return;
+        }
+
+        const surveyId = document.getElementById('surveyId').value.trim() || 'demo-survey';
+        const tokenInput = generateTokenInputHex();
+        const { blindedElementHex, blindFactorInvHex } = await oprfBlindModp14({ tokenInputHex: tokenInput, contextId: surveyId, issuer });
+
+        const issueResp = await fetch('/issue', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ issuanceCode, blinded: blindedElementHex })
+        });
+        const issued = await issueResp.json();
+        if (!issueResp.ok) throw new Error(issued.error || 'issue error');
+
+        const { tokenOutputHex } = await oprfUnblindModp14({ evaluatedElementHex: issued.evaluated, blindFactorInvHex, issuer });
+        const commitmentHex = await oprfDeriveCommitmentHex({ tokenOutputHex, contextId: surveyId, issuer });
+
+        const redeemResp = await fetch('/redeem', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ contextId: surveyId, credential: { keyId: issued.keyId, tokenInput, tokenOutput: tokenOutputHex } })
+        });
+        const redeemed = await redeemResp.json();
+        if (!redeemResp.ok) throw new Error(redeemed.error || 'redeem error');
+
+        log({
+          tokenInput,
+          blindedElement: blindedElementHex,
+          tokenOutput: tokenOutputHex,
+          commitmentHex,
+          redeemed
+        });
+
+        const token = redeemed?.submissionToken || '';
+        summaryToken.textContent = token || '—';
+        summaryExpires.textContent = redeemed?.expiresAt ? `Expires at ${redeemed.expiresAt}` : '';
+        btnCopyToken.disabled = !token;
+        btnCopyTokenInline.disabled = !token;
+        btnCopyToken.onclick = async () => {
+          await navigator.clipboard.writeText(token);
+          showToast('Copied', 'Submission token copied.');
+        };
+        btnCopyTokenInline.onclick = btnCopyToken.onclick;
+
+        setStatus('Success: submission token issued.', 'ok');
+      }
+
+      document.getElementById('btnIssuer').onclick = () => fetchIssuer().catch((e) => setStatus(e.message, 'err'));
+      document.getElementById('btnRun').onclick = () => oneClick().catch((e) => setStatus(e.message, 'err'));
+
+      // Auto-load issuer for nicer first impression.
+      fetchIssuer().catch(() => {
+        issuerBadge.textContent = 'error';
+        setStatus('Could not load issuer (is the server running?)', 'warn');
+      });
+    </script>
+  </body>
+</html>

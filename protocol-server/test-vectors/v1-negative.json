@@ -1,0 +1,17 @@
+{
+  "keyId": "test-v1",
+  "privateKeyPem": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQDQyprK8cJQilKp\nNBmdPo+6eVKZKLacoysIyAKtJXKPjWm3SJkGPA3zBEDp4ofVlw+Zs1BNqSL+yfXF\n7igWr9YJFVXAWBM9ukEf1fRgPfVq62fdftmfDkg5/PAVZ8/aHkafne/1Pl4rlreq\n3ro14fl4JNUfZqyBpwW74SOd8PSU8UJh3XL1QDmDmUDI3ZW93nE96bvE/GkePuX8\nx5nBYjzpPynl8TB2AOuogsu0uTTQJGiu4W5CGFF+fVTZhDwAjRDuz/s0LG/RS5v3\nEubnAX3jsYB/HgIiRuYCuYAOjgGnZqdNp5Nxb6SL3f072VkSRQ4VYANGgYja1GQY\nhVONWYsXAgMBAAECggEACJjXD9UtjZhsd+gbx+Q8Ec8ODh1li4SScI2fwpZgpbWK\nbVARcPbHEkMSEy9PLYXHUCpYe6IjvT7+njREtU5vLzeQLNfTjv6c0N1D7zSN5uWj\nhLTE7C4v3idikVcRcWc+vDLKHxx+zyepD2GVZEOWPJKzrdPR9ZK1gzttdoLl5z4G\nxxaOcabPk36mFJagjoa1xSHymMlMQXvE4yTbpictBA2TNLE1WEH6qlfQXJnSy89I\nF53nsSog6ryHBdcfOsjePj2Ge/8r/EyJ1kjavhhCZPyPfDRVozi/Cdm3S1aOKmEY\nufIdAfRjWPMPhmBSfz85U+rRHFyCUVQNoO7an3B18QKBgQD6HQl5UrR49bSGvD0Q\nqmfsVTNPJW9tMLfnw/0ReGjYAvY+Jhv39kCVq7cmjZ8zcbatbHbC7LQ0KVpKOots\nBrQrBDQca6f91PExIn9sbQbQwt/ZCbHc18zaD+q94UvAUWhYcWJVhtvW4qkqFBlL\n4aRtd4Y0wPJPev4oP17A7YpnpwKBgQDVtJkDDfWOJo+35G5SNmV2XJ67rFIFGnHZ\nkFShtWB/xdTflLlHWVi/cxjlMkdEVSvzPaxuO3Y5/tAOJMTRgLExg/vzIViSGebz\nXIzuE86EN4tD3r4UKXlPfCbUSpZOt+tTE/kRUneZW2BS8qOOTE7MDXLfcEw7DMrm\ntLkjRPcvEQKBgHUJX2SJQfAUMayWqxCAXO7nE4JmpxR2JqhqOqKRMKZcBHQiixXm\nAmTHHIYK4UNGY9AVICGod86sxxZS/OjI3kf+yI/ABLUvjsmKNgw7nGPVvL+n3LXV\nuYMUzaiao0LUFTrFm9kfqQGNwNDy5L9wT+v1cTSAUSLGD+YveRxYS1qjAoGBAISP\nPcqTQhom+UcMPxJoA4/j6+JmBYp82NonmReltnILePwm+La1SUOYVXz2LxbH7jc3\nrlnCMJfQ46WiUSPTPBaG1CYALTyTLJsQcarMRnHlMlGrPSSshT80t7E/gvTZSPOD\nlB+Wk/FgqONK9wExfD8+qF7I/cAzMzjgKWcjRGDBAoGARHxEguG4CitBMdAcXYm9\ndxkilTrpJe/3V/7FnDoO6BSmUBYdcY7nzAX9oj0HF14BDElFJ/XRYFA5AFz5h3aM\n9fcm9QbiKRLWuEf5p3hLJrj44ZWFB0qJWlrziva1ASJaWV5IJRMmWMRYIdRppQK0\ntdi852D1Ju9lS6SvqqlJwrg=\n-----END PRIVATE KEY-----\n",
+  "cases": [
+    {
+      "name": "wrong_signature",
+      "commitmentHex": "b62f0ee97e69e08ad0930e8a99e6c10dd47114ae9d81f5689cf302a7b5e99513",
+      "signatureHex": "00"
+    },
+    {
+      "name": "wrong_commitment_length",
+      "commitmentHex": "abcd",
+      "signatureHex": "00"
+    }
+  ]
+}
+

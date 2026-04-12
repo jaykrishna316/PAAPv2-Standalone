@@ -4,12 +4,25 @@ const { base64UrlToBigInt, bigIntToHex, hexToBigInt, modPow } = require('./bigin
 const { getModp14 } = require('./modp14');
 const oprf = require('./oprfModp14');
 const { getOprfKeyMaterialModp14 } = require('./oprfKeys');
+const rfc9474 = require('./rfc9474');
+const { getKeyManager } = require('./keyRotation');
+const { getAuditLogger } = require('./auditLogger');
+
+const {
+  blind: rfc9474Blind,
+  blindSign: rfc9474BlindSign,
+  finalize: rfc9474Finalize,
+  verify: rfc9474Verify,
+  getPemFromJwk: rfc9474GetPemFromJwk
+} = rfc9474;
 
 const SUITES = {
   // Demo-only suite. See protocol/paapv2/SECURITY.md for the production upgrade path.
   DEMO_RAW_RSA_2048_SHA256: 'PAAPv2-DEMO-RAW-RSA-2048-SHA256',
   // VOPRF-inspired OPRF suite over a standard MODP group.
-  OPRF_MODP14_SHA256: 'PAAPv2-OPRF-MODP14-SHA256'
+  OPRF_MODP14_SHA256: 'PAAPv2-OPRF-MODP14-SHA256',
+  // RFC 9474 Blind RSA with PSS encoding - production-ready standardized suite
+  RFC9474_RSA_2048_PSS_SHA256: 'PAAPv2-RFC9474-RSA-2048-PSS-SHA256'
 };
 
 function getRsaParams() {
@@ -94,6 +107,17 @@ module.exports = {
   oprfComputeTokenOutput: oprf.computeTokenOutput,
   oprfDeriveCommitmentHexFromTokenOutput: oprf.deriveCommitmentHexFromTokenOutput,
 
+  // RFC 9474 Blind RSA suite exports
+  rfc9474Blind,
+  rfc9474BlindSign,
+  rfc9474Finalize,
+  rfc9474Verify,
+  rfc9474GetPemFromJwk,
+
+  // Key rotation and audit logging
+  getKeyManager,
+  getAuditLogger,
+
   /**
    * Suite-aware public issuer info for `/issuer`.
    */
@@ -111,6 +135,21 @@ module.exports = {
         keyId,
         group: { id: group.id, primeHex: group.primeHex, generatorHex: group.generatorHex, elementBytes: group.elementBytes },
         publicKeyHex
+      };
+    }
+    if (suiteId === SUITES.RFC9474_RSA_2048_PSS_SHA256) {
+      const keyManager = getKeyManager();
+      const currentKey = keyManager.getCurrentKey();
+      if (!currentKey) {
+        throw new Error('No current key found. Run key rotation first.');
+      }
+      const publicJwk = keyManager.getPublicKeyJwk(currentKey.keyId);
+      return {
+        suiteId,
+        keyId: currentKey.keyId,
+        publicKey: publicJwk,
+        publicJwk: publicJwk,
+        allPublicKeys: keyManager.getAllPublicKeys()
       };
     }
     throw new Error(`Unsupported suiteId: ${suiteId}`);

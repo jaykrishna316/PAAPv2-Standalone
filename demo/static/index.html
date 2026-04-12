@@ -161,15 +161,83 @@
         border-radius: 14px;
         padding: 12px;
         background: rgba(0,0,0,.08);
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
       }
       [data-theme="light"] .step { background: rgba(16,24,40,.02); }
-      .stepTop { display:flex; align-items:center; justify-content:space-between; gap: 10px; }
+      .step.active {
+        border-color: rgba(109,124,255,.6);
+        background: rgba(109,124,255,.08);
+        box-shadow: 0 0 20px rgba(109,124,255,.2);
+      }
+      .step.completed {
+        border-color: rgba(34,197,94,.6);
+        background: rgba(34,197,94,.08);
+      }
+      .step::before {
+        content: attr(data-step);
+        position: absolute;
+        top: -8px;
+        left: -8px;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        background: var(--card);
+        border: 2px solid var(--border);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        font-weight: 800;
+        color: var(--muted);
+        z-index: 1;
+      }
+      .step.active::before {
+        background: rgba(109,124,255,1);
+        border-color: rgba(109,124,255,.8);
+        color: white;
+      }
+      .step.completed::before {
+        background: rgba(34,197,94,1);
+        border-color: rgba(34,197,94,.8);
+        color: white;
+        content: '✓';
+      }
+      .stepTop { display:flex; align-items:center; justify-content:space-between; gap: 10px; margin-bottom: 8px; }
       .stepName { font-weight: 800; font-size: 13px; letter-spacing: .2px; }
       .badge {
         font-size: 11px; color: var(--muted); border: 1px solid var(--border);
         padding: 3px 8px; border-radius: 999px; background: var(--card2);
       }
       .stepBody { margin-top: 7px; color: var(--muted2); font-size: 12px; line-height: 1.45; }
+      .stepCallout {
+        margin-top: 10px;
+        padding: 8px;
+        background: rgba(0,0,0,.15);
+        border-radius: 8px;
+        font-size: 11px;
+        display: none;
+        animation: fadeIn 0.3s ease;
+      }
+      [data-theme="light"] .stepCallout { background: rgba(16,24,40,.05); }
+      .step.active .stepCallout,
+      .step.completed .stepCallout {
+        display: block;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-5px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .calloutTitle {
+        font-weight: 700;
+        color: var(--accent);
+        margin-bottom: 4px;
+      }
+      .calloutText {
+        color: var(--muted2);
+        line-height: 1.4;
+      }
       code, .mono { font-family: var(--mono); }
       code { background: rgba(109,124,255,.12); border: 1px solid rgba(109,124,255,.20); padding: 1px 6px; border-radius: 8px; }
       [data-theme="light"] code { background: rgba(109,124,255,.08); }
@@ -202,6 +270,170 @@
         resize: vertical;
       }
       [data-theme="light"] textarea { background: rgba(16,24,40,.03); }
+
+      .timeline {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      .timeline-item {
+        display: flex;
+        gap: 12px;
+        padding: 12px;
+        border-radius: 12px;
+        background: rgba(0,0,0,.08);
+        border: 1px solid var(--border);
+        position: relative;
+        transition: all 0.2s ease;
+      }
+      [data-theme="light"] .timeline-item { background: rgba(16,24,40,.02); }
+      .timeline-item:hover {
+        background: rgba(109,124,255,.08);
+        border-color: rgba(109,124,255,.3);
+      }
+      .timeline-item.step1 { border-left: 3px solid rgba(109,124,255,.8); }
+      .timeline-item.step2 { border-left: 3px solid rgba(109,124,255,.8); }
+      .timeline-item.step3 { border-left: 3px solid rgba(34,197,94,.8); }
+      .timeline-dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: rgba(109,124,255,.8);
+        margin-top: 4px;
+        flex-shrink: 0;
+      }
+      .timeline-item.step3 .timeline-dot {
+        background: rgba(34,197,94,.8);
+      }
+      .timeline-content {
+        flex: 1;
+        min-width: 0;
+      }
+      .timeline-title {
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--text);
+        margin-bottom: 4px;
+      }
+      .timeline-desc {
+        font-size: 12px;
+        color: var(--muted2);
+        line-height: 1.4;
+        margin-bottom: 6px;
+      }
+      .timeline-data {
+        font-family: var(--mono);
+        font-size: 11px;
+        background: rgba(0,0,0,.15);
+        padding: 6px 8px;
+        border-radius: 6px;
+        color: var(--muted);
+        overflow-x: auto;
+        white-space: nowrap;
+      }
+      [data-theme="light"] .timeline-data { background: rgba(16,24,40,.05); }
+      .timeline-tooltip {
+        position: relative;
+        cursor: help;
+      }
+      .timeline-tooltip::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,.9);
+        color: white;
+        padding: 6px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        white-space: nowrap;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.2s;
+        z-index: 100;
+      }
+      .timeline-tooltip:hover::after {
+        opacity: 1;
+      }
+
+      .contextual-actions {
+        margin-top: 16px;
+        padding: 12px;
+        background: rgba(34,197,94,.08);
+        border: 1px solid rgba(34,197,94,.3);
+        border-radius: 12px;
+        display: none;
+      }
+      .contextual-actions.visible {
+        display: block;
+      }
+      .action-title {
+        font-weight: 700;
+        font-size: 13px;
+        color: var(--accent2);
+        margin-bottom: 8px;
+      }
+      .action-desc {
+        font-size: 12px;
+        color: var(--muted2);
+        margin-bottom: 10px;
+        line-height: 1.4;
+      }
+
+      .wizard-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0,0,0,.7);
+        backdrop-filter: blur(4px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+      }
+      .wizard-overlay.visible {
+        display: flex;
+      }
+      .wizard-card {
+        background: var(--bg1);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        max-width: 400px;
+        width: 90%;
+        box-shadow: 0 20px 60px rgba(0,0,0,.5);
+      }
+      .wizard-title {
+        font-size: 18px;
+        font-weight: 700;
+        margin: 0 0 12px;
+      }
+      .wizard-text {
+        font-size: 14px;
+        color: var(--muted2);
+        line-height: 1.5;
+        margin-bottom: 16px;
+      }
+      .wizard-progress {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      }
+      .wizard-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--border);
+      }
+      .wizard-dot.active {
+        background: var(--accent);
+      }
+      .wizard-dot.completed {
+        background: var(--accent2);
+      }
 
       .statusline { margin-top: 10px; display:flex; align-items:center; gap: 10px; flex-wrap: wrap; }
       .statuspill {
@@ -251,46 +483,68 @@
 
       <div class="hero">
         <div class="card">
-          <h1>Issue once. Redeem once. Stay unlinkable.</h1>
+          <h1>Click "One-click: Issue + Redeem" to see the magic</h1>
           <p class="sub">
-            This demo shows how PAAP v2 grants <strong>eligibility without identity login</strong> using blind issuance,
+            Watch how PAAP v2 grants <strong>eligibility without identity login</strong> using blind issuance,
             then enforces single-use via <strong>scoped nullifiers</strong>.
           </p>
 
           <div class="pillrow">
             <span class="pill"><span class="dot"></span><span>3 endpoints: <span class="mono">/issuer</span>, <span class="mono">/issue</span>, <span class="mono">/redeem</span></span></span>
             <span class="pill"><span class="dot good"></span><span>No IP/UA in DB by protocol design</span></span>
-            <span class="pill"><span class="dot warn"></span><span>Don’t share issuance codes in URLs</span></span>
+            <span class="pill"><span class="dot warn"></span><span>Don't share issuance codes in URLs</span></span>
+          </div>
+
+          <div class="hint" style="margin-top: 15px; font-size: 11px; color: var(--muted2);">
+            <strong>Note:</strong> Demo uses OPRF-MODP14 suite for simplicity. Production deployments should use RFC 9474 (standardized Blind RSA with PSS) for stronger security.
           </div>
 
           <div class="steps">
-            <div class="step">
+            <div class="step" id="step1" data-step="1">
               <div class="stepTop">
-                <div class="stepName">1) Fetch issuer</div>
+                <div class="stepName">1) Meet the issuer</div>
                 <span class="badge" id="issuerBadge">loading…</span>
               </div>
-              <div class="stepBody">Client learns the suite + public parameters to blind in-browser.</div>
+              <div class="stepBody">Client learns the cryptographic suite + public parameters to blind in-browser.</div>
+              <div class="stepCallout">
+                <div class="calloutTitle">What this means</div>
+                <div class="calloutText">Your browser gets the public key needed to encrypt your secret before sending it to the server.</div>
+                <div class="calloutTitle" style="margin-top:6px;">Why it's safe</div>
+                <div class="calloutText">The server only shares public information. Your secret never leaves your device unencrypted.</div>
+              </div>
             </div>
-            <div class="step">
+            <div class="step" id="step2" data-step="2">
               <div class="stepTop">
-                <div class="stepName">2) Blind issue</div>
+                <div class="stepName">2) Prove eligibility without sharing your secret</div>
                 <span class="badge">eligible-only</span>
               </div>
-              <div class="stepBody">You send <code>issuanceCode</code> + a blinded element. Server never sees your secret.</div>
+              <div class="stepBody">Add <code>demo-code</code> in "Issuance code" field, then click "One-click" to reveal this step.</div>
+              <div class="stepCallout">
+                <div class="calloutTitle">What this means</div>
+                <div class="calloutText">You prove you have a valid issuance code without revealing the code itself to the server.</div>
+                <div class="calloutTitle" style="margin-top:6px;">Why it's safe</div>
+                <div class="calloutText">Blind encryption means the server signs your request without ever seeing your actual secret or code.</div>
+              </div>
             </div>
-            <div class="step">
+            <div class="step" id="step3" data-step="3">
               <div class="stepTop">
-                <div class="stepName">3) Redeem</div>
+                <div class="stepName">3) Redeem and get a disposable token</div>
                 <span class="badge">one-time</span>
               </div>
               <div class="stepBody">Redeem once to receive a one-time capability token (e.g., submission token).</div>
+              <div class="stepCallout">
+                <div class="calloutTitle">What this means</div>
+                <div class="calloutText">You exchange your signed credential for a one-use token that proves you're eligible without revealing who you are.</div>
+                <div class="calloutTitle" style="margin-top:6px;">Why it's safe</div>
+                <div class="calloutText">The token is disposable and unlinkable. The server only stores a "nullifier" to prevent reuse, not your identity.</div>
+              </div>
             </div>
           </div>
         </div>
 
         <div class="card">
           <div class="cardTitle">Run the flow</div>
-          <p class="cardDesc">Paste a one-time issuance code printed by the demo server, then click One‑click.</p>
+          <p class="cardDesc">Use the demo issuance code to test the stateless PAAP v2 flow.</p>
 
           <div class="grid2">
             <div class="field">
@@ -300,8 +554,8 @@
             </div>
             <div class="field">
               <label for="issuanceCode">Issuance code</label>
-              <input class="input" id="issuanceCode" placeholder="Paste the code from the server console" />
-              <div class="hint"><strong>Keep secret.</strong> If someone else redeems first, they can burn it.</div>
+              <input class="input" id="issuanceCode" value="demo-code" placeholder="demo-code" />
+              <div class="hint">Stateless demo code: <strong>demo-code</strong>. No code tracking in memory.</div>
             </div>
           </div>
 
@@ -357,7 +611,24 @@
           </div>
 
           <div id="panelRaw" class="panel" style="display:none;">
-            <textarea id="out" readonly spellcheck="false"></textarea>
+            <div id="timeline" class="timeline">
+              <div class="timeline-item" style="opacity:0.5;">
+                <div class="timeline-dot"></div>
+                <div class="timeline-content">
+                  <div class="timeline-title">Ready</div>
+                  <div class="timeline-desc">Click "One-click" to start the interactive flow</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="contextualActions" class="contextual-actions">
+            <div class="action-title">🎉 Flow Complete! Next Steps</div>
+            <div class="action-desc">Your submission token is ready. Here's what you can do with it:</div>
+            <div class="actions">
+              <button id="btnMockSubmit" class="btn good" type="button">Mock: Submit anonymously</button>
+              <button id="btnViewNullifier" class="btn" type="button">View what server stores</button>
+            </div>
           </div>
         </div>
 
@@ -395,6 +666,22 @@
       <span id="toastBody">Copied to clipboard.</span>
     </div>
 
+    <div id="wizardOverlay" class="wizard-overlay">
+      <div class="wizard-card">
+        <h2 class="wizard-title" id="wizardTitle">Welcome to PAAP v2</h2>
+        <p class="wizard-text" id="wizardText">Let's walk through how anonymous authorization works.</p>
+        <div class="wizard-progress">
+          <div class="wizard-dot" id="wizardDot1"></div>
+          <div class="wizard-dot" id="wizardDot2"></div>
+          <div class="wizard-dot" id="wizardDot3"></div>
+        </div>
+        <div class="actions">
+          <button id="btnWizardNext" class="btn primary" type="button">Next</button>
+          <button id="btnWizardSkip" class="btn ghost" type="button">Skip tour</button>
+        </div>
+      </div>
+    </div>
+
     <script type="module">
       import {
         generateTokenInputHex,
@@ -403,7 +690,7 @@
         oprfDeriveCommitmentHex
       } from '/sdk/paapv2-browser.js';
 
-      const out = document.getElementById('out');
+      const timeline = document.getElementById('timeline');
       const statusDot = document.getElementById('statusDot');
       const statusText = document.getElementById('statusText');
       const issuanceCodeEl = document.getElementById('issuanceCode');
@@ -429,8 +716,62 @@
       const toastTitle = document.getElementById('toastTitle');
       const toastBody = document.getElementById('toastBody');
 
+      const contextualActions = document.getElementById('contextualActions');
+      const btnMockSubmit = document.getElementById('btnMockSubmit');
+      const btnViewNullifier = document.getElementById('btnViewNullifier');
+
+      // Step elements
+      const step1 = document.getElementById('step1');
+      const step2 = document.getElementById('step2');
+      const step3 = document.getElementById('step3');
+
+      // Timeline logging
+      let timelineData = [];
+
+      function addTimelineItem(step, title, desc, data, tooltip) {
+        const item = { step, title, desc, data, tooltip };
+        timelineData.push(item);
+        renderTimeline();
+      }
+
+      function renderTimeline() {
+        timeline.innerHTML = '';
+        timelineData.forEach((item, index) => {
+          const div = document.createElement('div');
+          div.className = `timeline-item ${item.step}`;
+          div.innerHTML = `
+            <div class="timeline-dot"></div>
+            <div class="timeline-content">
+              <div class="timeline-title">${item.title}</div>
+              <div class="timeline-desc">${item.desc}</div>
+              ${item.data ? `<div class="timeline-data timeline-tooltip" data-tooltip="${item.tooltip}">${item.data}</div>` : ''}
+            </div>
+          `;
+          timeline.appendChild(div);
+        });
+      }
+
+      function setStepStatus(step, status) {
+        const stepEl = document.getElementById(`step${step}`);
+        if (status === 'active') {
+          stepEl.classList.add('active');
+          stepEl.classList.remove('completed');
+        } else if (status === 'completed') {
+          stepEl.classList.remove('active');
+          stepEl.classList.add('completed');
+        } else {
+          stepEl.classList.remove('active', 'completed');
+        }
+      }
+
+      function resetSteps() {
+        [step1, step2, step3].forEach(el => {
+          el.classList.remove('active', 'completed');
+        });
+      }
+
       const log = (obj) => {
-        out.value = typeof obj === 'string' ? obj : JSON.stringify(obj, null, 2);
+        // Legacy log function, replaced by timeline
       };
 
       const setStatus = (txt, level = 'ok') => {
@@ -482,21 +823,36 @@
 
       let issuer = null;
       async function fetchIssuer() {
+        setStepStatus(1, 'active');
+        setStatus('Fetching issuer info...', 'warn');
+        
         const r = await fetch('/issuer');
         issuer = await r.json();
         if (!r.ok) throw new Error(issuer.error || 'issuer error');
+        
         issuerBadge.textContent = 'ready';
         suiteText.textContent = issuer.suiteId || 'unknown-suite';
         suitePill.style.display = '';
         summarySuite.textContent = issuer.suiteId || '—';
         summaryKeyId.textContent = issuer.keyId || '—';
+        
+        setStepStatus(1, 'completed');
         setStatus('Issuer loaded.', 'ok');
-        log({ issuer });
+        
+        addTimelineItem('step1', 'Step 1 Complete: Meet the issuer', 
+          'Fetched public cryptographic parameters from the issuer.',
+          `Suite: ${issuer.suiteId}`, 
+          'Public parameters are safe to share - they don\'t reveal secrets');
       }
 
       async function oneClick() {
+        resetSteps();
+        contextualActions.classList.remove('visible');
+        timelineData = [];
+        
         setStatus('Running…', 'warn');
         issuerBadge.textContent = 'loading…';
+        
         if (!issuer) await fetchIssuer();
 
         const issuanceCode = issuanceCodeEl.value.trim();
@@ -506,9 +862,21 @@
         }
 
         const surveyId = document.getElementById('surveyId').value.trim() || 'demo-survey';
+        
+        // Step 2: Blind issuance
+        setStepStatus(2, 'active');
+        setStatus('Generating secret and blinding...', 'warn');
+        
         const tokenInput = generateTokenInputHex();
         const { blindedElementHex, blindFactorInvHex } = await oprfBlindModp14({ tokenInputHex: tokenInput, contextId: surveyId, issuer });
+        
+        addTimelineItem('step2', 'Step 2: Secret Generated', 
+          'Created a random secret and blinded it using the issuer\'s public key.',
+          `Secret length: ${tokenInput.length} chars`,
+          'Your secret never leaves your device unencrypted');
 
+        setStatus('Requesting blind signature...', 'warn');
+        
         const issueResp = await fetch('/issue', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -517,9 +885,20 @@
         const issued = await issueResp.json();
         if (!issueResp.ok) throw new Error(issued.error || 'issue error');
 
+        addTimelineItem('step2', 'Step 2 Complete: Blind Signature Received', 
+          'Server signed your blinded element without seeing your secret.',
+          `KeyId: ${issued.keyId}`,
+          'Server can\'t link this signature to your identity');
+
         const { tokenOutputHex } = await oprfUnblindModp14({ evaluatedElementHex: issued.evaluated, blindFactorInvHex, issuer });
         const commitmentHex = await oprfDeriveCommitmentHex({ tokenOutputHex, contextId: surveyId, issuer });
 
+        setStepStatus(2, 'completed');
+        setStatus('Redeeming credential...', 'warn');
+
+        // Step 3: Redeem
+        setStepStatus(3, 'active');
+        
         const redeemResp = await fetch('/redeem', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -528,32 +907,114 @@
         const redeemed = await redeemResp.json();
         if (!redeemResp.ok) throw new Error(redeemed.error || 'redeem error');
 
-        log({
-          tokenInput,
-          blindedElement: blindedElementHex,
-          tokenOutput: tokenOutputHex,
-          commitmentHex,
-          redeemed
-        });
+        addTimelineItem('step3', 'Step 3 Complete: Token Redeemed', 
+          'Exchanged your signed credential for a one-time submission token.',
+          `Token: ${redeemed?.submissionToken?.substring(0, 20)}...`,
+          'Token is unlinkable to your original issuance code');
 
         const token = redeemed?.submissionToken || '';
         summaryToken.textContent = token || '—';
         summaryExpires.textContent = redeemed?.expiresAt ? `Expires at ${redeemed.expiresAt}` : '';
         btnCopyToken.disabled = !token;
         btnCopyTokenInline.disabled = !token;
+        
         btnCopyToken.onclick = async () => {
           await navigator.clipboard.writeText(token);
           showToast('Copied', 'Submission token copied.');
         };
         btnCopyTokenInline.onclick = btnCopyToken.onclick;
 
+        setStepStatus(3, 'completed');
         setStatus('Success: submission token issued.', 'ok');
+        
+        // Show contextual actions
+        contextualActions.classList.add('visible');
+        
+        // Auto-scroll to result
+        document.querySelector('.card .cardTitle').textContent = 'Result';
+        document.querySelector('.split').scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
 
       document.getElementById('btnIssuer').onclick = () => fetchIssuer().catch((e) => setStatus(e.message, 'err'));
       document.getElementById('btnRun').onclick = () => oneClick().catch((e) => setStatus(e.message, 'err'));
+      
+      // Contextual action handlers
+      btnMockSubmit.onclick = () => {
+        showToast('Mock Submit', 'In production, this would submit your anonymous post using the submission token.');
+      };
+      
+      btnViewNullifier.onclick = () => {
+        showToast('Server Storage', 'The server stores only a hash (nullifier) to prevent reuse, not your identity.');
+      };
 
-      // Auto-load issuer for nicer first impression.
+      // Wizard overlay logic
+      const wizardOverlay = document.getElementById('wizardOverlay');
+      const wizardTitle = document.getElementById('wizardTitle');
+      const wizardText = document.getElementById('wizardText');
+      const btnWizardNext = document.getElementById('btnWizardNext');
+      const btnWizardSkip = document.getElementById('btnWizardSkip');
+      const wizardDots = [
+        document.getElementById('wizardDot1'),
+        document.getElementById('wizardDot2'),
+        document.getElementById('wizardDot3')
+      ];
+      
+      let wizardStep = 0;
+      const wizardSteps = [
+        {
+          title: 'Welcome to PAAP v2',
+          text: 'This demo shows how you can prove eligibility without revealing your identity. Let\'s walk through the 3-step process.',
+        },
+        {
+          title: 'Step 1: Meet the Issuer',
+          text: 'First, your browser fetches public cryptographic parameters from the issuer. This allows you to encrypt your secret before sending it.',
+        },
+        {
+          title: 'Step 2: Blind Issuance',
+          text: 'You send a blinded element (your encrypted secret) to the server. The server signs it without ever seeing your actual secret.',
+        },
+        {
+          title: 'Step 3: Redeem',
+          text: 'Finally, you exchange your signed credential for a one-time token. The server only stores a nullifier (hash) to prevent reuse, not your identity.',
+        }
+      ];
+
+      function updateWizard() {
+        const step = wizardSteps[wizardStep];
+        wizardTitle.textContent = step.title;
+        wizardText.textContent = step.text;
+        
+        wizardDots.forEach((dot, i) => {
+          dot.classList.remove('active', 'completed');
+          if (i < wizardStep) dot.classList.add('completed');
+          if (i === wizardStep) dot.classList.add('active');
+        });
+        
+        btnWizardNext.textContent = wizardStep === wizardSteps.length - 1 ? 'Start Demo' : 'Next';
+      }
+
+      btnWizardNext.onclick = () => {
+        if (wizardStep < wizardSteps.length - 1) {
+          wizardStep++;
+          updateWizard();
+        } else {
+          wizardOverlay.classList.remove('visible');
+        }
+      };
+
+      btnWizardSkip.onclick = () => {
+        wizardOverlay.classList.remove('visible');
+      };
+
+      // Auto-load issuer and show wizard on first visit
+      if (!localStorage.getItem('paap_wizard_seen')) {
+        setTimeout(() => {
+          wizardOverlay.classList.add('visible');
+          updateWizard();
+          localStorage.setItem('paap_wizard_seen', 'true');
+        }, 500);
+      }
+
       fetchIssuer().catch(() => {
         issuerBadge.textContent = 'error';
         setStatus('Could not load issuer (is the server running?)', 'warn');

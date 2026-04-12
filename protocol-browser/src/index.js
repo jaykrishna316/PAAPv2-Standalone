@@ -215,3 +215,150 @@ export const oprfDeriveCommitmentHex = async ({ tokenOutputHex, contextId, issue
   material.set(outBytes, prefix.length);
   return sha256HexBytes(material);
 };
+
+// -----------------------------
+// RFC 9474 Blind RSA with PSS
+// -----------------------------
+
+const mgf1 = async (seed, maskLen, hashFn) => {
+  const hLen = 32; // SHA-256 output length
+  const T = new Uint8Array(maskLen);
+  const seedBytes = typeof seed === 'string' ? Uint8Array.from(seed.match(/.{1,2}/g).map((b) => parseInt(b, 16))) : seed;
+  
+  for (let counter = 0; counter < Math.ceil(maskLen / hLen); counter++) {
+    const counterBytes = new Uint8Array(4);
+    const view = new DataView(counterBytes.buffer);
+    view.setUint32(0, counter, false);
+    
+    const C = new Uint8Array(seedBytes.length + 4);
+    C.set(seedBytes);
+    C.set(counterBytes, seedBytes.length);
+    
+    const hash = await hashFn(C);
+    const offset = counter * hLen;
+    for (let i = 0; i < Math.min(hLen, maskLen - offset); i++) {
+      T[offset + i] ^= hash[i];
+    }
+  }
+  return T;
+};
+
+const emsaPssEncode = async (message, emBits, salt = null) => {
+  const hLen = 32; // SHA-256
+  const emLen = Math.ceil(emBits / 8);
+  const sLen = hLen;
+  
+  const mHash = await sha256HexBytes(typeof message === 'string' ? new TextEncoder().encode(message) : message);
+  const mHashBytes = Uint8Array.from(mHash.match(/.{1,2}/g).map((b) => parseInt(b, 16)));
+  
+  if (emLen < hLen + sLen + 2) throw new Error('emLen too short for PSS');
+  
+  const saltBytes = salt || getRandomBytes(sLen);
+  const M = new Uint8Array(8 + hLen + sLen);
+  M.fill(0, 0, 8);
+  M.set(mHashBytes, 8);
+  M.set(saltBytes, 8 + hLen);
+  
+  const H = await sha256HexBytes(M);
+  const HBytes = Uint8Array.from(H.match(/.{1,2}/g).map((b) => parseInt(b, 16)));
+  
+  const PS = new Uint8Array(emLen - sLen - hLen - 2);
+  PS.fill(0);
+  
+  const DB = new Uint8Array(PS.length + 1 + sLen);
+  DB.set(PS, 0);
+  DB[PS.length] = 0x01;
+  DB.set(saltBytes, PS.length + 1);
+  
+  const dbMask = await mgf1(HBytes, DB.length, sha256HexBytes);
+  const maskedDB = new Uint8Array(DB.length);
+  for (let i = 0; i < DB.length; i++) {
+    maskedDB[i] = DB[i] ^ dbMask[i];
+  }
+  
+  const zeroBits = 8 * emLen - emBits;
+  const bitMask = 0xFF >>> zeroBits;
+  maskedDB[0] &= bitMask;
+  
+  const EM = new Uint8Array(emLen);
+  EM.set(maskedDB, 0);
+  EM.set(HBytes, DB.length);
+  EM[emLen - 1] = 0xBC;
+  
+  return EM;
+};
+
+const hexToBytes = (hex) => {
+  const normalized = hex.startsWith('0x') ? hex.slice(2) : hex;
+  return Uint8Array.from(normalized.match(/.{1,2}/g).map((b) => parseInt(b, 16)));
+};
+
+const bytesToBigInt = (bytes) => {
+  let result = 0n;
+  for (let i = 0; i < bytes.length; i++) {
+    result = (result << 8n) | BigInt(bytes[i]);
+  }
+  return result;
+};
+
+const bigIntToBytes = (value, length) => {
+  let hex = value.toString(16);
+  hex = hex.padStart(length * 2, '0');
+  return hexToBytes(hex.slice(-length * 2));
+};
+
+export const rfc9474Blind = async ({ message, publicJwk }) => {
+  if (!publicJwk?.n) throw new Error('Missing issuer public key');
+  const n = base64UrlToBigInt(publicJwk.n);
+  const e = base64UrlToBigInt(publicJwk.e);
+  const k = Math.ceil((n.toString(2).length) / 8);
+  
+  const encoded = await emsaPssEncode(message, 8 * k - 1);
+  const m = bytesToBigInt(encoded);
+  
+  let r;
+  while (true) {
+    r = randomBigIntBelow(n);
+    if (r <= 1n) continue;
+    try {
+      modInv(r, n);
+      break;
+    } catch {
+      continue;
+    }
+  }
+  
+  const rInv = modInv(r, n);
+  const mBlind = (m * modPow(r, e, n)) % n;
+  
+  return {
+    blindedMessageHex: bigIntToHex(mBlind),
+    blindFactorHex: bigIntToHex(rInv)
+  };
+};
+
+export const rfc9474Finalize = async ({ blindSignatureHex, blindFactorHex, publicJwk }) => {
+  if (!publicJwk?.n) throw new Error('Missing issuer public key');
+  const n = base64UrlToBigInt(publicJwk.n);
+  const r = hexToBigInt(blindFactorHex);
+  const sBlind = hexToBigInt(blindSignatureHex);
+  const s = (sBlind * r) % n;
+  
+  return {
+    signatureHex: bigIntToHex(s)
+  };
+};
+
+export const rfc9474Verify = async ({ message, signatureHex, publicJwk }) => {
+  if (!publicJwk?.n || !publicJwk?.e) throw new Error('Missing issuer public key');
+  const n = base64UrlToBigInt(publicJwk.n);
+  const e = base64UrlToBigInt(publicJwk.e);
+  const k = Math.ceil((n.toString(2).length) / 8);
+  
+  const encoded = await emsaPssEncode(message, 8 * k - 1);
+  const m = bytesToBigInt(encoded);
+  const s = hexToBigInt(signatureHex);
+  const mRecovered = modPow(s, e, n);
+  
+  return m === mRecovered;
+};

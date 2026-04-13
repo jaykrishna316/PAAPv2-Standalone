@@ -1,0 +1,15 @@
+# Terraform files
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.*
+*.tfvars
+!terraform.tfvars.example
+*.zip
+lambda_function.zip
+crash.log
+crash.*.log
+
+# OS files
+.DS_Store
+Thumbs.db

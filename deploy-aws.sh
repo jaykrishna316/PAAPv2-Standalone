@@ -10,6 +10,24 @@ SUITE="PAAPv2-OPRF-MODP14-SHA256"
 REPO="https://github.com/jaykrishna316/PAAPv2-Standalone.git"
 DEPLOY_DIR="$HOME/paapv2-deploy"
 
+# Check for destroy flag
+if [ "$1" = "--destroy" ]; then
+  echo "======================================"
+  echo " PAAP v2 AWS Cleanup"
+  echo "======================================"
+  
+  cd "$DEPLOY_DIR/terraform" 2>/dev/null || {
+    echo "No deployment found. Nothing to destroy."
+    exit 0
+  }
+  
+  echo "[1/1] Destroying all resources..."
+  terraform destroy -auto-approve
+  echo ""
+  echo "Cleanup complete! All PAAP v2 resources have been removed."
+  exit 0
+fi
+
 echo "======================================"
 echo " PAAP v2 AWS Deployment"
 echo "======================================"

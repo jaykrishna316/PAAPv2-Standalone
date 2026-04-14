@@ -19,22 +19,24 @@ PAAPv2-Standalone/
 
 ## Quick Start
 
-1. Navigate to the project directory:
+### Local Development
+1. Clone the repository
+2. Install dependencies: `npm install`
+3. Start the demo server: `npm start`
+4. Open http://localhost:4040 in your browser
+
+### AWS Cloud Deployment (One-click)
+Deploy the complete stack to AWS with a single command in [AWS CloudShell](https://console.aws.amazon.com/cloudshell):
+
 ```bash
-cd /Users/jayichapurapu/Desktop/PAAPv2-Standalone
+curl -s https://raw.githubusercontent.com/jaykrishna316/PAAPv2-Standalone/main/deploy-aws.sh | bash
 ```
 
-2. Start the demo server:
-```bash
-npm start
-```
-
-3. Open your browser to:
-```
-http://localhost:4040
-```
-
-4. Use the demo issuance code `demo-code` to test the flow.
+This deploys:
+- Lambda + API Gateway (backend)
+- S3 + CloudFront (frontend with HTTPS)
+- Complete PAAP v2 demo with educational context
+- Takes ~15 minutes (CloudFront propagation)
 
 ## Protocol Endpoints
 
